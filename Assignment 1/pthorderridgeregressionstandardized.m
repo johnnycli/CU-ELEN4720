@@ -1,0 +1,148 @@
+%pthorderridgeregressionstandardized.m
+% Johnny C. Li jcl2222@columbia.edu
+% This is the modified version of Assignment1RidgeRegression.m to include
+% 2nd and 3rd order fit. RMSE against lambda is plotted.
+
+%Load x data from file
+global x_train_data;
+x_train_data=csvread('X_train.csv',0,0);
+
+%Load y data from file
+y_train_data=csvread('y_train.csv',0,0);
+y_train_response=y_train_data(:,1);
+
+%Creates function to find the Wrr
+wrr = @(lambda,y,X,dim) inv(lambda*eye(dim)+X'*X)*X'*y;
+df = @(lambda,X) trace(X*inv((X'*X+lambda*eye(7)))*X');
+
+%Initialize empty matrix for data storage.
+wrrmatrix = [];
+wrrmatrixquad =[];
+wrrmatrixcubic = [];
+dfmatrix = [];
+
+global x_train_data_quad;
+global x_train_data_cubic;
+
+%Find mean and stdev of quadratic terms
+mmeanquad=mean(x_train_data(:,[1:6]).^2);
+mstdquad=std(x_train_data(:,[1:6]).^2,0,1);
+
+%Find mean and stdev of cubic terms
+mmeancubic=mean(x_train_data(:,[1:6]).^3);
+mstdcubic=std(x_train_data(:,[1:6]).^3,0,1);
+
+%Standardized
+quadfeatures = x_train_data(:,[1:6]).^2-repmat(mmeanquad,size(x_train_data(:,[1:6]).^2,1),1);
+quadfeatures = quadfeatures./repmat(mstdquad,size(quadfeatures,1),1);
+
+cubicfeatures = x_train_data(:,[1:6]).^3-repmat(mmeancubic,size(x_train_data(:,[1:6]).^3,1),1);
+cubicfeatures = cubicfeatures./repmat(mstdcubic,size(cubicfeatures,1),1);
+
+x_train_data_quad = [x_train_data quadfeatures];
+x_train_data_cubic = [x_train_data quadfeatures cubicfeatures];
+%For loop to calculate df and wrr at 5000 lambda and write to matrix.
+
+for lam= 0:100
+    xtt=wrr(lam,y_train_data,x_train_data,7);
+    xttquad=wrr(lam,y_train_data,x_train_data_quad,13);
+    xttcubic=wrr(lam,y_train_data,x_train_data_cubic,19);
+    dft=df(lam,x_train_data);
+    wrrmatrix = [wrrmatrix xtt];
+    wrrmatrixquad = [wrrmatrixquad xttquad];
+    wrrmatrixcubic = [wrrmatrixcubic xttcubic];
+    dfmatrix = [dfmatrix dft];
+end
+
+%Organize the results for plotting
+combdata = [dfmatrix' wrrmatrix'];
+
+%Plot out the result
+figure
+hold on
+title('Ridge Regression on Training Set')
+xlabel('df(\lambda)') 
+plot(combdata(:,1),combdata(:,2));
+plot(combdata(:,1),combdata(:,3));
+plot(combdata(:,1),combdata(:,4));
+plot(combdata(:,1),combdata(:,5));
+plot(combdata(:,1),combdata(:,6));
+plot(combdata(:,1),combdata(:,7));
+plot(combdata(:,1),combdata(:,8));
+legend({'x_1','x_2','x_3','x_4','x_5','x_6','x_7'},'Location','southwest')
+hold off
+
+%Load x test data from file
+global x_test_data;
+x_test_data=csvread('X_test.csv',0,0);
+
+%Find mean and stdev of quadratic terms
+mmeanquadtest=mean(x_test_data(:,[1:6]).^2);
+mstdquadtest=std(x_test_data(:,[1:6]).^2,0,1);
+
+%Find mean and stdev of cubic terms
+mmeancubictest=mean(x_test_data(:,[1:6]).^3);
+mstdcubictest=std(x_test_data(:,[1:6]).^3,0,1);
+
+%Standardized
+quadfeaturestest = x_test_data(:,[1:6]).^2-repmat(mmeanquadtest,size(x_test_data(:,[1:6]).^2,1),1);
+quadfeaturestest = quadfeaturestest./repmat(mstdquadtest,size(quadfeaturestest,1),1);
+
+cubicfeaturestest = x_test_data(:,[1:6]).^3-repmat(mmeancubictest,size(x_test_data(:,[1:6]).^3,1),1);
+cubicfeaturestest = cubicfeaturestest./repmat(mstdcubictest,size(cubicfeaturestest,1),1);
+
+x_test_data_quad = [x_test_data quadfeaturestest];
+x_test_data_cubic = [x_test_data quadfeaturestest cubicfeaturestest];
+
+
+
+%Load y test data from file
+y_test_data=csvread('y_test.csv',0,0);
+
+%Define varialbes for storage
+summatrix = [];
+RMSE = [];
+
+summatrixquad = [];
+RMSEquad = [];
+
+summatrixcubic = [];
+RMSEcubic = [];
+
+%Outer for loop to calculate RSME for 5000 lambdas.
+for lam= 0:100
+    %Difference between prediction and actual data
+    summatrix=(x_test_data*wrrmatrix(:,lam+1)-y_test_data).^2;
+    sumval = sum(summatrix,'all');
+    %Calculate RSME
+    RMSE = [RMSE sqrt(sumval/42)];
+    
+    %Quad Difference between prediction and actual data
+    summatrixquad=(x_test_data_quad*wrrmatrixquad(:,lam+1)-y_test_data).^2;
+    sumvalquad = sum(summatrixquad,'all');
+    %Calculate RSME
+    RMSEquad = [RMSEquad sqrt(sumvalquad/42)];
+    
+    %Cubic Difference between prediction and actual data
+    summatrixcubic=(x_test_data_cubic*wrrmatrixcubic(:,lam+1)-y_test_data).^2;
+    sumvalcubic = sum(summatrixcubic,'all');
+    %Calculate RSME
+    RMSEcubic = [RMSEcubic sqrt(sumvalcubic/42)];
+    
+end
+
+%Combine data for plotting purposes
+RMSEdata = [(0:1:100)' RMSE'];
+RMSEdataquad = [(0:1:100)' RMSEquad'];
+RMSEdatacubic = [(0:1:100)' RMSEcubic'];
+
+%Plot out the result
+figure
+hold on
+title('RMSE for Ridge Regression')
+xlabel('\lambda') 
+plot(RMSEdata(:,1),RMSEdata(:,2));
+plot(RMSEdataquad(:,1),RMSEdataquad(:,2));
+plot(RMSEdatacubic(:,1),RMSEdatacubic(:,2));
+legend({'Linear','Quadratic','Cubic'},'Location','northeast')
+hold off

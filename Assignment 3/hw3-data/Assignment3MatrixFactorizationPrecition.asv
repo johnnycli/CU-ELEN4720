@@ -1,0 +1,16 @@
+% Assignment3MatrixFactorizationPrecition.m
+% Johnny C. Li jcl2222@columbia.edu
+% Take the 10 run data and perform prediction. Calculate the RMSE.
+% Import data to workspace is required.
+%
+
+%Import test data
+raw_test_data = csvread('Prob3_ratings_test.csv',0,0);
+
+%Prediction result
+MF_pred = zeros(size(raw_test_data,1),1);
+
+%Calculate predicted rating
+for i=1:size(raw_test_data,1)
+    MF_pred(i)=u_arr{raw_test_data(i,)}*v_arr{};
+end

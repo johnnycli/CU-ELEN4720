@@ -1,0 +1,46 @@
+% Assignment2GaussianProcess.m
+% Johnny C. Li jcl2222@columbia.edu
+% This program takes the test data and perform a Gaussian process
+% regression.
+
+%Load x data from file
+x_train_data;
+x_train_data=csvread('X_train.csv',0,0);
+
+%Load y data from file
+y_train_data=csvread('y_train.csv',0,0);
+y_train_response=y_train_data(:,1);
+
+%Load x test data from file
+x_test_data=csvread('X_test.csv',0,0);
+
+%Load y test data from file
+y_test_data=csvread('y_test.csv',0,0);
+
+%Create array for constants
+bval=(5:2:15);
+sigval=(0.1:0.1:1);
+
+%Define the Kernel function with Euclidean norm
+kern = @ (xi,xj,b) exp(-1/b*norm(xi-xj)^2);
+%n-n Identity
+Ikk = eye(size(x_train_data,1));
+
+%Calculate the values for Kij and populate matrix K.
+kmatrix=zeros(size(x_train_data,1),size(x_train_data,1));
+for i=1:size(x_train_data,1)
+    for j=1:size(x_train_data,1)
+        kmatrix(i,j)= kern(x_train_data(i,:),x_train_data(j,:),5);
+    end
+end
+
+
+xtest=x_test_data(1,:);
+%Generate kxDn
+kxDn=zeros(1,size(x_train_data,1));
+for i=1:size(x_train_data,1)
+    kxDn(i)=kern(xtest,x_train_data(i,:),5);
+end
+mux = kxDn.((0.1)*Ikk+kmatrix);
+
+
