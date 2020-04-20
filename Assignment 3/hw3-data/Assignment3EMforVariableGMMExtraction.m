@@ -21,7 +21,7 @@ y_train_response=y_train_data(:,1);
 %% Control initialization
 iteration = 30;
 rounds = 10;
-NGMM = 1;
+NGMM = 3;
 L_it_lst=zeros(rounds,iteration);
 %Defined my own function for calculating the PDF
 p_xmu_sig = @(x,mu,sigdet,sigi) 1/((2*pi)^(10/2)*sigdet.^(1/2))*exp(-1/2*transpose(x-mu)*sigi*(x-mu));

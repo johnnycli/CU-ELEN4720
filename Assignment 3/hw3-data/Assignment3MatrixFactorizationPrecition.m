@@ -1,23 +1,46 @@
 % Assignment3MatrixFactorizationPrecition.m
 % Johnny C. Li jcl2222@columbia.edu
-% Take the 10 run data and perform prediction. Calculate the RMSE.
-% Import data to workspace is required.
+% Take the 10 run data and find the 10 closest movies to target. The 
+% Assignment3MatrixFactorization.m must be ran first or Workspace from
+% a session has to be imported to reduce run/debug time. 
 %
 
-%Import test data
-raw_test_data = csvread('Prob3_ratings_test.csv',0,0);
+% Notes
+% Star Wars = 50
+% My Fair Lady = 485
+% Goodfellas = 182
 
-ds = size(raw_test_data,1);
+%Targets
+targets = [50,485,182];
 
-%Prediction result
-MF_pred = zeros(ds,1);
+%Import movie titles
+movie_title = textscan(fopen('Prob3_movies.txt'),'%s','delimiter','\n');
+movie_title = [movie_title{1,1}];
 
-RMSE_sum = 0;
+%Allocate space for distance calculation
+distances = zeros(size(targets,2),size(movie_title,1));
 
-%Calculate predicted rating and RMSE
-for i=1:ds
-    MF_pred(i)=u_arr{raw_test_data(i,1)}.'*v_arr{raw_test_data(i,2)};
-    RMSE_sum = RMSE_sum + (MF_pred(i)-raw_test_data(i,3))^2/ds;
+for t=1:size(targets,2)
+    for i=1:size(movie_title,1)
+        %Find Euclidean distance
+        distances(t,i) = norm(v_arr{targets(t)}-v_arr{i});
+    end
 end
 
-RMSE = sqrt(RMSE_sum);
+%Allocate space for movies
+ten_closest = cell(size(targets,2),11);
+
+index = 1:size(movie_title,1);
+
+%Sort the distance and compile a list of top 11 with first entry being the
+%target.
+for t=1:size(targets,2)
+    temp_list = [distances(t,:).' index.'];
+    sorted = sortrows(temp_list);
+    
+    for i=1:11
+        ten_closest(t,i)=movie_title(sorted(i,2));
+    end
+    
+end
+

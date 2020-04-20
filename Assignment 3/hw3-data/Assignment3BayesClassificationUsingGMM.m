@@ -33,13 +33,17 @@ p_x_mu_sig = @(x,mu,sig) 1/((2*pi)^(10/2)*det(sig).^(1/2))*exp(-1/2*transpose(x-
 
 %Confusion matrix (Prediction 0 1/Row)x(Actual 0 1/Column)
 CM = zeros(2,2);
-
+prob0 = 0;
+prob1 = 0;
 
 for i=1:size(y_test_data,1)
-    for k=1:2
-        prob0=pi_k_0_max(G0)*p_x_mu_sig(x_test_data(i,:).',mu_0_max(:,G0),sig_0_max{G0});
-        prob1=pi_k_1_max(G1)*p_x_mu_sig(x_test_data(i,:).',mu_1_max(:,G1),sig_1_max{G1});
+    %prob0=pi_k_0_max(G0)*p_x_mu_sig(x_test_data(i,:).',mu_0_max(:,G0),sig_0_max{G0});
+    %prob1=pi_k_1_max(G1)*p_x_mu_sig(x_test_data(i,:).',mu_1_max(:,G1),sig_1_max{G1});
+    
+    for k=1:NGMMP
+    prob1 = prob1 + pi_k_1_max(k)*p_x_mu_sig(x_test_data(i,:).',mu_1_max(:,k),sig_1_max{k});
     end
+    
     if(prob0>prob1)
         y_prediction(i)=0;
     else
