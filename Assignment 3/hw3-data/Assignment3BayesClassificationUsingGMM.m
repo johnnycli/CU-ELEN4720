@@ -41,6 +41,7 @@ for i=1:size(y_test_data,1)
     %prob1=pi_k_1_max(G1)*p_x_mu_sig(x_test_data(i,:).',mu_1_max(:,G1),sig_1_max{G1});
     
     for k=1:NGMMP
+    prob0 = prob0 + pi_k_0_max(k)*p_x_mu_sig(x_test_data(i,:).',mu_0_max(:,k),sig_0_max{k});
     prob1 = prob1 + pi_k_1_max(k)*p_x_mu_sig(x_test_data(i,:).',mu_1_max(:,k),sig_1_max{k});
     end
     
