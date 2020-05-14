@@ -10,13 +10,14 @@
 % Data follows the format:
 % Team A index, Team A points, Team B index, Team B points
 score_data = csvread('CFB2019_scores.csv',0,0);
-
-team_name = textscan(fopen('TeamNames.txt'),'%s','delimiter','\n');
+fid = fopen('TeamNames.txt');
+team_name = textscan(fid,'%s','delimiter','\n');
+fclose(fid);
 team_name= team_name{1,1};
 
 M_hat = zeros(769,769);
 
-%% Look thorugh the score data and populate the W_hat matrix.
+%% Look thorugh the score data and populate the M_hat matrix.
 for i = 1:size(score_data,1)
     % If Team A has more points than Team B.
     if(score_data(i,2)>score_data(i,4))
@@ -58,8 +59,7 @@ for t=1:10000
     w_t = w_t*M;
     
     % Calculate difference
-    wdiff(t) = sum(w_t-w_inf);
-    
+    wdiff(t) = sum(abs(w_t-w_inf));
     % Print top teams at given t
     if(t==10 || t==100 || t==1000 || t==10000)
         w_temp = [w_t.' team_index.'];
